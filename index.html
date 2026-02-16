@@ -4,10 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
 </head>
 <body>
-    
+    <h1>Tic Tac Toe</h1>
+    <div class="turn-indicator">
+        <p id="turn-indicator-text">Player X is up!</p>
+    </div>
+    <div class="gameboard">
+        <div class="cell" data-index="0">X</div>
+        <div class="cell" data-index="1">X</div>
+        <div class="cell" data-index="2">X</div>
+        <div class="cell" data-index="3">X</div>
+        <div class="cell" data-index="4">X</div>
+        <div class="cell" data-index="5">X</div>
+        <div class="cell" data-index="6">X</div>
+        <div class="cell" data-index="7">X</div>
+        <div class="cell" data-index="8">X</div>
+    </div>
+    <div class="game-result">
+        <p id="game-result-text">Player X wins!</p>
+        <button id="restart-button">Restart Game</button>
+    </div>
 </body>
 </html>

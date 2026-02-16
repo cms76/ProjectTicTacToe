@@ -2,6 +2,7 @@
 const gameBoard = ( () => {
     let board = [['','',''],['','',''],['','','']];
     let lastPlayer = '';
+    let nextPlayer = '';
     
     function getBoard() {
         return board;
@@ -29,7 +30,7 @@ const gameBoard = ( () => {
             console.log("Invalid move: it's the other player's turn");            
             error = true;
         }
-        lastPlayer = player;
+        
         if (col < 0 || col > 2 || row < 0 || row > 2) {
             console.log("Invalid move: out of bounds");            
             error = true;
@@ -40,6 +41,8 @@ const gameBoard = ( () => {
         }
         if (!error && board[row][col] === '') {
             board[row][col] = player;
+            lastPlayer = player;
+            nextPlayer = player === 'X' ? 'O' : 'X';
             ret = true;
         } else {
             console.log("Invalid move: cell already occupied");            
@@ -105,7 +108,16 @@ const gameBoard = ( () => {
     }
 
     function getFirstPlayer() {
-        return Math.random() < 0.5 ? 'X' : 'O';
+        const ret = Math.random() < 0.5 ? 'X' : 'O';
+        nextPlayer = ret;
+        return ret;
+    }
+
+    function getNextPlayer() {
+        if (nextPlayer === '') {
+            return getFirstPlayer();
+        }
+        return nextPlayer;
     }
 
     return {
@@ -115,9 +127,85 @@ const gameBoard = ( () => {
         checkWin,
         checkDraw,
         checkEmpty,
-        getFirstPlayer
+        getNextPlayer
     };
 
 
 })();
+
+
+const viewController = ( () => {
+    function updateTurnIndicator() {
+        const turnIndicator = document.getElementById('turn-indicator-text');
+        turnIndicator.textContent = "Player " + gameBoard.getNextPlayer() + " is up!";      
+    }
+
+    function updateGameResult() {
+        const gameResultText = document.getElementById('game-result-text');
+        const winner = gameBoard.checkWin();
+        const draw = gameBoard.checkDraw();        
+        if (winner !== '') {
+            gameResultText.textContent = "Player " + winner + " wins!";
+        } else if (draw) {
+            gameResultText.textContent = "It's a draw!";        
+        } else {
+            gameResultText.textContent = "";
+        }
+    }
+
+    function updateBoard() {
+        const board = gameBoard.getBoard();
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                // get the cell element with data-index = ((i + 1) * (j + 1)) - 1
+                const cell = document.querySelector(`[data-index="${(i * 3) + j}"]`);
+                cell.textContent = board[i][j];
+            }
+        }
+    }
+
+    function handleCellClick(event) {
+        const index = parseInt(event.target.getAttribute('data-index'));
+        const row = Math.floor(index / 3);
+        const col = index % 3;
+        const player = gameBoard.getNextPlayer();
+        if (gameBoard.playerMove(row, col, player)) {
+            updateBoard();
+            updateGameResult();
+            updateTurnIndicator();
+        }
+    }
+
+    function resetGame() {
+        gameBoard.resetBoard();
+        updateBoard();
+        updateGameResult();
+        updateTurnIndicator();
+    }    
+
+    function initialize() {
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+        const resetButton = document.getElementById('restart-button');
+        resetButton.addEventListener('click', resetGame);
+    }
+
+    return {
+        updateTurnIndicator,
+        updateGameResult,
+        updateBoard,
+        initialize
+    };
+
+
+})();
+
+//initialize the game
+viewController.updateTurnIndicator();
+viewController.updateGameResult();
+viewController.updateBoard();
+viewController.initialize();
+
 
