@@ -19,6 +19,12 @@ const gameBoard = ( () => {
             error = true;
         }
 
+        let checkDraw = gameBoard.checkDraw();
+        if (checkDraw) {
+            console.log("Invalid move: game already drawn");            
+            error = true;
+        }
+
         if (lastPlayer === player) {
             console.log("Invalid move: it's the other player's turn");            
             error = true;
