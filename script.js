@@ -35,14 +35,14 @@ const gameBoard = ( () => {
             console.log("Invalid move: out of bounds");            
             error = true;
         }
-        if (player !== 'X' && player !== 'O') {
+        if (player !== playerXSymbol() && player !== playerOSymbol()) {
             console.log("Invalid move: player must be 'X' or 'O'");            
             error = true;
         }
         if (!error && board[row][col] === '') {
             board[row][col] = player;
             lastPlayer = player;
-            nextPlayer = player === 'X' ? 'O' : 'X';
+            nextPlayer = player === playerXSymbol() ? playerOSymbol() : playerXSymbol();
             ret = true;
         } else {
             console.log("Invalid move: cell already occupied");            
@@ -66,21 +66,21 @@ const gameBoard = ( () => {
         //check rows
         for (let i = 0; i < 3; i++) {
             if (board[i][0] !== '' && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
-                return board[i][0];
+                return board[i][0] === playerXSymbol() ? playerXGivenName() : playerOGivenName();
             }
         }
         //check columns
         for (let j = 0; j < 3; j++) {
             if (board[0][j] !== '' && board[0][j] === board[1][j] && board[1][j] === board[2][j]) {
-                return board[0][j];
+                return board[0][j] === playerXSymbol() ? playerXGivenName() : playerOGivenName();
             }
         }
         //check diagonals
         if (board[0][0] !== '' && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
-            return board[0][0];
+            return board[0][0] === playerXSymbol() ? playerXGivenName() : playerOGivenName();
         }
         if (board[0][2] !== '' && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
-            return board[0][2];
+            return board[0][2] === playerXSymbol() ? playerXGivenName() : playerOGivenName();
         }
         return '';
     }
@@ -107,17 +107,62 @@ const gameBoard = ( () => {
         return true;
     }
 
-    function getFirstPlayer() {
-        const ret = Math.random() < 0.5 ? 'X' : 'O';
+    function playerXGivenName() {
+        playerXEntry = document.getElementById('player-x-name');
+        if (playerXEntry.value.trim() === '') {
+            return 'X';
+        }
+        else
+        {
+            return playerXEntry.value.trim();
+        }
+    }
+
+    function playerXSymbol() {
+        return 'X';
+    }
+
+
+
+    function playerOGivenName() {
+        playerOEntry = document.getElementById('player-o-name');
+        if (playerOEntry.value.trim() === '') {
+            return 'O';
+        }
+        else
+        {
+            return playerOEntry.value.trim();
+        }
+    }
+
+    function playerOSymbol() {
+        return 'O';
+    }
+
+    function getFirstPlayerSymbol() {
+        const ret = Math.random() < 0.5 ? playerXSymbol() : playerOSymbol();
         nextPlayer = ret;
         return ret;
     }
 
-    function getNextPlayer() {
+    function getFirstPlayerGivenName() {
+        const ret = Math.random() < 0.5 ? playerXGivenName() : playerOGivenName();
+        nextPlayer = ret;
+        return ret;
+    }
+
+    function getNextPlayerSymbol() {
         if (nextPlayer === '') {
-            return getFirstPlayer();
+            return getFirstPlayerSymbol();
         }
         return nextPlayer;
+    }
+
+    function getNextPlayerGivenName() {
+        if (nextPlayer === '') {
+            return getFirstPlayerGivenName();
+        }
+        return nextPlayer === playerXSymbol() ? playerXGivenName() : playerOGivenName();
     }
 
     return {
@@ -127,7 +172,8 @@ const gameBoard = ( () => {
         checkWin,
         checkDraw,
         checkEmpty,
-        getNextPlayer
+        getNextPlayerGivenName,
+        getNextPlayerSymbol,
     };
 
 
@@ -137,7 +183,7 @@ const gameBoard = ( () => {
 const viewController = ( () => {
     function updateTurnIndicator() {
         const turnIndicator = document.getElementById('turn-indicator-text');
-        turnIndicator.textContent = "Player " + gameBoard.getNextPlayer() + " is up!";      
+        turnIndicator.textContent = "Player " + gameBoard.getNextPlayerGivenName() + " is up!";      
     }
 
     function updateGameResult() {
@@ -150,6 +196,9 @@ const viewController = ( () => {
             gameResultText.textContent = "It's a draw!";        
         } else {
             gameResultText.textContent = "";
+        }
+        if (!gameBoard.checkEmpty()) {
+            enablePlayerNameInputs(false);
         }
     }
 
@@ -168,7 +217,7 @@ const viewController = ( () => {
         const index = parseInt(event.target.getAttribute('data-index'));
         const row = Math.floor(index / 3);
         const col = index % 3;
-        const player = gameBoard.getNextPlayer();
+        const player = gameBoard.getNextPlayerSymbol();
         if (gameBoard.playerMove(row, col, player)) {
             updateBoard();
             updateGameResult();
@@ -181,7 +230,13 @@ const viewController = ( () => {
         updateBoard();
         updateGameResult();
         updateTurnIndicator();
-    }    
+        enablePlayerNameInputs(true);
+    }  
+    
+    function enablePlayerNameInputs(enabled) {
+        document.getElementById('player-x-name').disabled = !enabled;
+        document.getElementById('player-o-name').disabled = !enabled;
+    }
 
     function initialize() {
         const cells = document.querySelectorAll('.cell');
@@ -190,6 +245,7 @@ const viewController = ( () => {
         });
         const resetButton = document.getElementById('restart-button');
         resetButton.addEventListener('click', resetGame);
+        enablePlayerNameInputs(true);
     }
 
     return {
